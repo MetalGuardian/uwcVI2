@@ -24,5 +24,19 @@ $app->get(
 		$app->render('index.php', []);
 	}
 );
+$app->get(
+	'/get-user-info',
+	function () use ($app) {
+		$email = $app->request->get('email');
+		$name = $app->request->get('name');
+		$stack = (int)$app->request->get('stack');
+		$stackUser = null;
+		if ($stack) {
+			$stackUser = Helper::getStackUserInfo($stack);
+		}
+
+		$app->render('view.php', ['stackUser' => $stackUser,]);
+	}
+);
 
 $app->run();
