@@ -6,7 +6,6 @@
     },
     "require": {
         "php-curl-class/php-curl-class": "dev-master",
-        "slim/slim": "2.*",
-        "php-activerecord/php-activerecord": "dev-master"
+        "slim/slim": "2.*"
     }
 }

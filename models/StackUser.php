@@ -33,13 +33,16 @@ namespace metalguardian\models;
  * @property $profile_image
  *
  * @property StackUserTag[] $tags [count, name]
+ * @property StackUserTopTag[] $topTags [count, name]
  */
 class StackUser
 {
 	/**
 	 * @param StackUser $user
+	 *
+	 * @return array
 	 */
-	public static function createChart($user)
+	public static function createChartTags($user)
 	{
 		$labels = [];
 		$data = [];
@@ -49,4 +52,27 @@ class StackUser
 		}
 		return [$labels, $data];
 	}
+
+	/**
+	 * @param StackUser $user
+	 *
+	 * @return array
+	 */
+	public static function createChartTopTags($user)
+	{
+		$labels = [];
+		$answerCount = [];
+		$answerScore = [];
+		$questionCount = [];
+		$questionScore = [];
+		foreach ($user->topTags as $tag) {
+			$labels[] = $tag->tag_name;
+			$answerCount[] = $tag->answer_count;
+			$answerScore[] = $tag->answer_score;
+			$questionCount[] = $tag->question_count;
+			$questionScore[] = $tag->question_score;
+		}
+		return [$labels, $answerCount, $answerScore, $questionCount, $questionScore];
+	}
+
 } 

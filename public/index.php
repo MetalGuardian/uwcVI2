@@ -1,4 +1,6 @@
 <?php
+session_cache_limiter(false);
+session_start();
 require '..' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 use metalguardian\helpers\Helper;
@@ -22,6 +24,17 @@ $app->get(
 	function () use ($app) {
 
 		$app->render('index.php', []);
+	}
+);
+$app->get(
+	'/stackAccess',
+	function () use ($app) {
+		$code = $app->request->get('code');
+		if (!$code) {
+			throw new Exception('Can not get access code');
+		}
+		Helper::getStackAccessToken($code);
+		$app->redirect('/');
 	}
 );
 $app->get(

@@ -18,7 +18,7 @@
 </head>
 <body>
 <div class="container">
-	<?php $this->display('stackView.php', ['user' => $stackUser]); ?>
+	<?php $stackUser && $this->display('stackView.php', ['user' => $stackUser]); ?>
 </div>
 </body>
 </html>

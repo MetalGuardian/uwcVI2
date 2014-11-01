@@ -3,6 +3,8 @@
  * Author: metal
  * Email: metal
  */
+use metalguardian\helpers\Helper;
+
 /**
  *
  */
@@ -16,6 +18,7 @@
 </head>
 <body>
 <div class="container">
+	<h1>Set up person params</h1>
 	<form method="get" action="/get-user-info">
 		<div class="form-group">
 			<label for="email">Email address</label>
@@ -27,10 +30,18 @@
 		</div>
 		<div class="form-group">
 			<label for="stack">Stack user id</label>
-			<input type="text" id="" class="form-control" name="stack" placeholder="Stack user id">
+			<input type="text" id="stack" class="form-control" name="stack" placeholder="Stack user id">
+		</div>
+		<div class="form-group">
+			<label for="gihub">Github user login</label>
+			<input type="text" id="gihub" class="form-control" name="github" placeholder="Github user login">
 		</div>
 		<button type="submit" class="btn btn-default">Submit</button>
 	</form>
+	<h1>Other functions</h1>
+	<?php if (!Helper::hasValidStackToken()) : ?>
+		<a href="<?= Helper::getStackLoginLink(); ?>">Grant access to stack overflow</a>
+	<?php endif; ?>
 </div>
 </body>
 </html>
