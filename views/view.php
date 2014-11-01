@@ -19,6 +19,12 @@
 </head>
 <body>
 <div class="container">
+	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-9">
+		<ul class="nav navbar-nav">
+			<li class="active"><a href="/">Home</a></li>
+		</ul>
+	</div>
+	<h1>Here you see information about finded users. Or not (if any information was found)</h1>
 	<?php $githubUser && $this->display('githubView.php', ['user' => $githubUser]); ?>
 	<?php $stackUser && $this->display('stackView.php', ['user' => $stackUser]); ?>
 </div>

@@ -7,6 +7,8 @@ use metalguardian\helpers\Helper;
 
 require '..' . DIRECTORY_SEPARATOR . 'config.php';
 
+Helper::init();
+
 $app = new \Slim\Slim(
 	[
 		'templates.path' => __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'views'
@@ -45,8 +47,6 @@ $app->get(
 $app->get(
 	'/get-user-info',
 	function () use ($app) {
-		$email = $app->request->get('email');
-		$name = $app->request->get('name');
 		$stack = (int)$app->request->get('stack');
 		$github = $app->request->get('github');
 
@@ -63,6 +63,13 @@ $app->get(
 		}
 
 		$app->render('view.php', ['stackUser' => $stackUser, 'githubUser' => $githubUser]);
+	}
+);
+$app->get(
+	'/flushCache',
+	function () use ($app) {
+		Helper::getCache()->dropCache();
+		$app->redirect('/');
 	}
 );
 

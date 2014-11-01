@@ -7,6 +7,8 @@
 namespace metalguardian\helpers;
 
 use Curl\Curl;
+use Desarrolla2\Cache\Adapter\File;
+use Desarrolla2\Cache\Cache;
 use metalguardian\models\StackUser;
 
 /**
@@ -18,75 +20,108 @@ class Helper
 	protected static $stackPoint = 'https://api.stackexchange.com';
 	protected static $githubPoint = 'https://api.github.com';
 
+	/** @var Cache */
+	protected static $cache;
+
+	public static function init()
+	{
+		$cacheDir = '../cache';
+		$adapter = new File($cacheDir);
+		$adapter->setOption('ttl', 3600);
+		static::$cache = new Cache($adapter);
+	}
+
+	public static function getCache()
+	{
+		return static::$cache;
+	}
+
 	public static function getStackUserInfo($id)
 	{
-		$curl = new Curl();
-		$curl->setOpt(CURLOPT_ENCODING, 'gzip');
-		$curl->get(
-			static::$stackPoint . '/2.2/users/' . $id,
-			[
-				'order' => 'desc',
-				'sort' => 'reputation',
-				'site' => 'stackoverflow',
-				'access_token' => static::getStackToken(),
-				'key' => STACK_KEY,
-			]
-		);
-		$response = $curl->response;
-		if (isset($response->error_id)) {
-			throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
-		}
-		/** @var StackUser $user */
-		$user = isset($response->items[0]) ? $response->items[0] : null;
+		$user = static::$cache->get('stack-user-info');
+		if ($user === false) {
+			$curl = new Curl();
+			$curl->setOpt(CURLOPT_ENCODING, 'gzip');
+			$curl->get(
+				static::$stackPoint . '/2.2/users/' . $id,
+				[
+					'order' => 'desc',
+					'sort' => 'reputation',
+					'site' => 'stackoverflow',
+					'access_token' => static::getStackToken(),
+					'key' => STACK_KEY,
+				]
+			);
+			$response = $curl->response;
+			if (isset($response->error_id)) {
+				throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
+			}
+			/** @var StackUser $user */
+			$user = isset($response->items[0]) ? $response->items[0] : null;
 
-		if (!$user) {
-			return false;
+			if (!$user) {
+				return false;
+			}
+			$user->tags = static::getStackUserTags($id);
+			$user->topTags = static::getStackUserTopTags($id);
+
+			static::$cache->set('stack-user-info', $user);
 		}
-		$user->tags = static::getStackUserTags($id);
-		$user->topTags = static::getStackUserTopTags($id);
 
 		return $user;
 	}
 
 	public static function getStackUserTags($id)
 	{
-		$curl = new Curl();
-		$curl->setOpt(CURLOPT_ENCODING, 'gzip');
-		$curl->get(
-			static::$stackPoint . '/2.2/users/' . $id . '/tags',
-			[
-				'order' => 'desc',
-				'sort' => 'popular',
-				'site' => 'stackoverflow',
-				'access_token' => static::getStackToken(),
-				'key' => STACK_KEY,
-			]
-		);
-		$response = $curl->response;
-		if (isset($response->error_id)) {
-			throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
+		$tags = static::$cache->get('stack-user-tags');
+		if ($tags === false) {
+			$curl = new Curl();
+			$curl->setOpt(CURLOPT_ENCODING, 'gzip');
+			$curl->get(
+				static::$stackPoint . '/2.2/users/' . $id . '/tags',
+				[
+					'order' => 'desc',
+					'sort' => 'popular',
+					'site' => 'stackoverflow',
+					'access_token' => static::getStackToken(),
+					'key' => STACK_KEY,
+				]
+			);
+			$response = $curl->response;
+			if (isset($response->error_id)) {
+				throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
+			}
+			$tags = isset($response->items) ? $response->items : [];
+
+			static::$cache->set('stack-user-tags', $tags);
 		}
-		$tags = isset($response->items) ? $response->items : [];
+
 		return $tags;
 	}
 
 	public static function getStackUserTopTags($id)
 	{
-		$curl = new Curl();
-		$curl->setOpt(CURLOPT_ENCODING, 'gzip');
-		$curl->get(
-			static::$stackPoint . '/2.2/users/' . $id . '/top-tags',
-			[
-				'site' => 'stackoverflow',
-				'access_token' => static::getStackToken(),
-				'key' => STACK_KEY,
-			]
-		);
-		$response = $curl->response;
-		if (isset($response->error_id)) {
-			throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
+		$tags = static::$cache->get('stack-user-top-tags');
+		if ($tags === false) {
+			$curl = new Curl();
+			$curl->setOpt(CURLOPT_ENCODING, 'gzip');
+			$curl->get(
+				static::$stackPoint . '/2.2/users/' . $id . '/top-tags',
+				[
+					'site' => 'stackoverflow',
+					'access_token' => static::getStackToken(),
+					'key' => STACK_KEY,
+				]
+			);
+			$response = $curl->response;
+			if (isset($response->error_id)) {
+				throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
+			}
+			$tags = isset($response->items) ? $response->items : [];
+
+			static::$cache->set('stack-user-top-tags', $tags);
 		}
-		$tags = isset($response->items) ? $response->items : [];
+
 		return $tags;
 	}
 
@@ -135,6 +170,9 @@ class Helper
 
 	public static function getStackToken()
 	{
+		if (!static::hasValidStackToken()) {
+			throw new \Exception('You have no access token! Please, go to index page and take access tokens');
+		}
 		return $_SESSION['stack_token'];
 	}
 
@@ -153,28 +191,55 @@ class Helper
 
 	public static function getGithubUserInfo($id)
 	{
-		$curl = new Curl();
-		$curl->setHeader('Accept', 'application/vnd.github.v3+json');
-		$curl->setHeader('Authorization', 'token ' . static::getGithubToken());
-		$curl->get(
-			static::$githubPoint . '/users/' . $id,
-			[
-			]
-		);
-		$response = $curl->response;
+		$user = static::$cache->get('github-user-info');
+		if ($user === false) {
+			$curl = new Curl();
+			$curl->setHeader('Accept', 'application/vnd.github.v3+json');
+			$curl->setHeader('Authorization', 'token ' . static::getGithubToken());
+			$curl->get(
+				static::$githubPoint . '/users/' . $id,
+				[
+				]
+			);
+			$response = $curl->response;
 
-		if ($curl->http_status_code !== 200) {
-			throw new \Exception(isset($response->message) ? $response->message : 'Unknown error');
+			if ($curl->http_status_code !== 200) {
+				throw new \Exception(isset($response->message) ? $response->message : 'Unknown error');
+			}
+			$user = $response;
+			//$user->contributions = static::getGithubUserContribotions($id);
+
+			static::$cache->set('github-user-info', $user);
 		}
-		$user = $response;
-
-		$user->contributions = static::getGithubUserContribotions($id);
-
 		return $user;
 	}
 
 	public static function getGithubUserContribotions($id)
 	{
+		$tags = static::$cache->get('github-user-contributions');
+		if ($tags === false) {
+			$curl = new Curl();
+			$curl->setHeader('Accept', 'application/vnd.github.v3+json');
+			$curl->setHeader('Authorization', 'token ' . static::getGithubToken());
+			$curl->get(
+				static::$githubPoint . '/users/' . $id . '/repos',
+				[
+				]
+			);
+			$response = $curl->response;
+
+			if ($curl->http_status_code !== 200) {
+				throw new \Exception(isset($response->message) ? $response->message : 'Unknown error');
+			}
+			echo '<pre>';
+			print_r($response);
+			exit();
+			$user = $response;
+
+			$user->contributions = static::getGithubUserContribotions($id);
+
+			$tags = static::$cache->set('github-user-contributions', false);
+		}
 		return false;
 	}
 
@@ -230,6 +295,9 @@ class Helper
 
 	public static function getGithubToken()
 	{
+		if (!static::hasValidGithubToken()) {
+			throw new \Exception('You have no access token! Please, go to index page and take access tokens');
+		}
 		return $_SESSION['github_token'];
 	}
 } 

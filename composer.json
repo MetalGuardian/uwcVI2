@@ -6,6 +6,7 @@
     },
     "require": {
         "php-curl-class/php-curl-class": "dev-master",
-        "slim/slim": "2.*"
+        "slim/slim": "2.*",
+        "desarrolla2/cache": "~1.7"
     }
 }
