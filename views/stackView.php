@@ -14,10 +14,7 @@ list($labels, $answerCount, $answerScore, $questionCount, $questionScore) = \met
 		labels: <?= json_encode($labelsTags); ?>,
 		datasets: [
 			{
-				fillColor: "rgba(220,220,220,0.5)",
-				strokeColor: "rgba(220,220,220,0.8)",
-				highlightFill: "rgba(220,220,220,0.75)",
-				highlightStroke: "rgba(220,220,220,1)",
+				fillColor: "black",
 				data: <?= json_encode($data); ?>
 			}
 		]
@@ -39,11 +36,11 @@ list($labels, $answerCount, $answerScore, $questionCount, $questionScore) = \met
 		labels : <?= json_encode($labels); ?>,
 		datasets : [
 			{
-				fillColor : "blue",
+				fillColor : "green",
 				data : <?= json_encode($questionCount); ?>
 			},
 			{
-				fillColor : "red",
+				fillColor : "aqua",
 				data : <?= json_encode($questionScore); ?>
 			}
 		]
@@ -86,7 +83,7 @@ list($labels, $answerCount, $answerScore, $questionCount, $questionScore) = \met
 			</div>
 
 			<ul class="list-inline list-unstyled">
-				<li><span><i class="glyphicon glyphicon-calendar"></i> <?= date('Y-m-d H:i:s', $user->last_access_date); ?> </span></li>
+				<li><span><i class="glyphicon glyphicon-calendar"></i> <?= date('Y-m-d H:i:s', $user->last_access_date); ?> last online</span></li>
 				<li>|</li>
 				<li>
 				<span><i class="glyphicon glyphicon-comment"></i> <?= $user->reputation; ?> reputation</span>
@@ -94,17 +91,17 @@ list($labels, $answerCount, $answerScore, $questionCount, $questionScore) = \met
 				<li>|</li>
 				<li>
 					<span class="glyphicon glyphicon-star" style="color: gold;"></span>
-					<?= $user->badge_counts->gold; ?>
+					<?= $user->badge_counts->gold; ?> gold badges
 				</li>
 				<li>|</li>
 				<li>
 					<span class="glyphicon glyphicon-star" style="color: silver;"></span>
-					<?= $user->badge_counts->silver; ?>
+					<?= $user->badge_counts->silver; ?> silver badges
 				</li>
 				<li>|</li>
 				<li>
 					<span class="glyphicon glyphicon-star" style="color: brown;"></span>
-					<?= $user->badge_counts->bronze; ?>
+					<?= $user->badge_counts->bronze; ?> bronze badges
 				</li>
 			</ul>
 		</div>
