@@ -38,7 +38,7 @@ class Helper
 
 	public static function getStackUserInfo($id)
 	{
-		$user = static::$cache->get('stack-user-info');
+		$user = static::$cache->get($id . 'stack-user-info');
 		if ($user === false) {
 			$curl = new Curl();
 			$curl->setOpt(CURLOPT_ENCODING, 'gzip');
@@ -65,7 +65,7 @@ class Helper
 			$user->tags = static::getStackUserTags($id);
 			$user->topTags = static::getStackUserTopTags($id);
 
-			static::$cache->set('stack-user-info', $user);
+			static::$cache->set($id . 'stack-user-info', $user);
 		}
 
 		return $user;
@@ -73,7 +73,7 @@ class Helper
 
 	public static function getStackUserTags($id)
 	{
-		$tags = static::$cache->get('stack-user-tags');
+		$tags = static::$cache->get($id . 'stack-user-tags');
 		if ($tags === false) {
 			$curl = new Curl();
 			$curl->setOpt(CURLOPT_ENCODING, 'gzip');
@@ -93,7 +93,7 @@ class Helper
 			}
 			$tags = isset($response->items) ? $response->items : [];
 
-			static::$cache->set('stack-user-tags', $tags);
+			static::$cache->set($id . 'stack-user-tags', $tags);
 		}
 
 		return $tags;
@@ -101,7 +101,7 @@ class Helper
 
 	public static function getStackUserTopTags($id)
 	{
-		$tags = static::$cache->get('stack-user-top-tags');
+		$tags = static::$cache->get($id . 'stack-user-top-tags');
 		if ($tags === false) {
 			$curl = new Curl();
 			$curl->setOpt(CURLOPT_ENCODING, 'gzip');
@@ -119,7 +119,7 @@ class Helper
 			}
 			$tags = isset($response->items) ? $response->items : [];
 
-			static::$cache->set('stack-user-top-tags', $tags);
+			static::$cache->set($id . 'stack-user-top-tags', $tags);
 		}
 
 		return $tags;
@@ -191,7 +191,7 @@ class Helper
 
 	public static function getGithubUserInfo($id)
 	{
-		$user = static::$cache->get('github-user-info');
+		$user = static::$cache->get($id . 'github-user-info');
 		if ($user === false) {
 			$curl = new Curl();
 			$curl->setHeader('Accept', 'application/vnd.github.v3+json');
@@ -209,14 +209,14 @@ class Helper
 			$user = $response;
 			//$user->contributions = static::getGithubUserContribotions($id);
 
-			static::$cache->set('github-user-info', $user);
+			static::$cache->set($id . 'github-user-info', $user);
 		}
 		return $user;
 	}
 
 	public static function getGithubUserContribotions($id)
 	{
-		$tags = static::$cache->get('github-user-contributions');
+		$tags = static::$cache->get($id . 'github-user-contributions');
 		if ($tags === false) {
 			$curl = new Curl();
 			$curl->setHeader('Accept', 'application/vnd.github.v3+json');
@@ -232,7 +232,7 @@ class Helper
 				throw new \Exception(isset($response->message) ? $response->message : 'Unknown error');
 			}
 
-			static::$cache->set('github-user-contributions', false);
+			static::$cache->set($id . 'github-user-contributions', false);
 		}
 		return false;
 	}
