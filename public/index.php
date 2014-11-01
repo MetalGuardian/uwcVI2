@@ -53,11 +53,12 @@ $app->get(
 		$stackUser = null;
 		if ($stack) {
 			// i use user id: 157882
-			//$stackUser = Helper::getStackUserInfo($stack);
+			$stackUser = Helper::getStackUserInfo($stack);
 		}
 
 		$githubUser = null;
 		if ($github) {
+			// i use user login: samdark
 			$githubUser = Helper::getGithubUserInfo($github);
 		}
 
