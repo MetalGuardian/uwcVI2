@@ -18,6 +18,9 @@
 			<h4 class="media-heading"><?= $user->name; ?></h4>
 			<p class="text-right">Hireable: <?= $user->hireable ? 'Yes' : 'No'; ?>; Username: <?= $user->login; ?>; Location: <?= $user->location; ?></p>
 			<p><?= $user->bio; ?></p>
+			<p>
+				<a href="https://github.com/users/<?= $user->login; ?>/contributions" target="_blank">To commit statistic</a>
+			</p>
 			<ul class="list-inline list-unstyled">
 				<li>
 					<span><i class="glyphicon glyphicon-comment"></i> <?= $user->public_repos; ?> repos</span>

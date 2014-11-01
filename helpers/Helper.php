@@ -232,7 +232,7 @@ class Helper
 				throw new \Exception(isset($response->message) ? $response->message : 'Unknown error');
 			}
 
-			$tags = static::$cache->set('github-user-contributions', false);
+			static::$cache->set('github-user-contributions', false);
 		}
 		return false;
 	}
