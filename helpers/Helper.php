@@ -16,6 +16,7 @@ use metalguardian\models\StackUser;
 class Helper
 {
 	protected static $stackPoint = 'https://api.stackexchange.com';
+	protected static $githubPoint = 'https://api.github.com';
 
 	public static function getStackUserInfo($id)
 	{
@@ -33,7 +34,7 @@ class Helper
 		);
 		$response = $curl->response;
 		if (isset($response->error_id)) {
-			throw new \Exception($response->error_message);
+			throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
 		}
 		/** @var StackUser $user */
 		$user = isset($response->items[0]) ? $response->items[0] : null;
@@ -63,7 +64,7 @@ class Helper
 		);
 		$response = $curl->response;
 		if (isset($response->error_id)) {
-			throw new \Exception($response->error_message);
+			throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
 		}
 		$tags = isset($response->items) ? $response->items : [];
 		return $tags;
@@ -83,7 +84,7 @@ class Helper
 		);
 		$response = $curl->response;
 		if (isset($response->error_id)) {
-			throw new \Exception($response->error_message);
+			throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
 		}
 		$tags = isset($response->items) ? $response->items : [];
 		return $tags;
@@ -114,7 +115,7 @@ class Helper
 
 		$response = $curl->response;
 		if (isset($response->error_id)) {
-			throw new \Exception($response->error_message);
+			throw new \Exception(isset($response->error_message) ? $response->error_message : 'Unknown error');
 		}
 
 		if (!preg_match('/access_token=(.*)&expires=(.[0-9]*)/', $response, $matches)) {
@@ -142,9 +143,93 @@ class Helper
 	 */
 	public static function hasValidStackToken()
 	{
-		if ($_SESSION['stack_token'] && $_SESSION['stack_expire'] > time()) {
-			return !true;
+		if (isset($_SESSION['stack_token']) && $_SESSION['stack_token'] && isset($_SESSION['stack_expire']) && $_SESSION['stack_expire'] > time()) {
+			return true;
 		}
 		return false;
+	}
+
+
+
+	public static function getGithubUserInfo($id)
+	{
+		$curl = new Curl();
+		$curl->setHeader('Accept', 'application/vnd.github.v3+json');
+		$curl->setHeader('Authorization', 'token ' . static::getGithubToken());
+		$curl->get(
+			static::$githubPoint . '/users/' . $id,
+			[
+			]
+		);
+		$response = $curl->response;
+
+		if ($curl->http_status_code !== 200) {
+			throw new \Exception(isset($response->message) ? $response->message : 'Unknown error');
+		}
+		$user = $response;
+
+		$user->contributions = static::getGithubUserContribotions($id);
+
+		return $user;
+	}
+
+	public static function getGithubUserContribotions($id)
+	{
+		return false;
+	}
+
+	public static function getGithubLoginLink()
+	{
+		$params = [
+			'client_id' => GITHUB_CLIENT_ID,
+			'redirect_uri' => GITHUB_REDIRECT_URL,
+		];
+		return 'https://github.com/login/oauth/authorize?' . http_build_query($params);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function hasValidGithubToken()
+	{
+		if (isset($_SESSION['github_token']) && $_SESSION['github_token']) {
+			return true;
+		}
+		return false;
+	}
+
+	public static function getGithubAccessToken($code)
+	{
+		$curl = new Curl();
+		$curl->setHeader('Accept', 'application/json');
+		$curl->post(
+			'https://github.com/login/oauth/access_token',
+			[
+				'client_id' => GITHUB_CLIENT_ID,
+				'client_secret' => GITHUB_CLIENT_SECRET,
+				'code' => $code,
+				'redirect_uri' => GITHUB_REDIRECT_URL,
+			]
+		);
+
+		$response = $curl->response;
+		if ($curl->http_status_code !== 200) {
+			throw new \Exception(isset($response->message) ? $response->message : 'Unknown error');
+		}
+		var_dump($response);
+		$token = $response->access_token;
+		$tokenType = $response->token_type;
+		static::setGithubTokenAndExpire($token, $tokenType);
+	}
+
+	public static function setGithubTokenAndExpire($token, $tokenType)
+	{
+		$_SESSION['github_token'] = $token;
+		$_SESSION['github_token_type'] = $tokenType;
+	}
+
+	public static function getGithubToken()
+	{
+		return $_SESSION['github_token'];
 	}
 } 

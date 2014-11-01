@@ -88,7 +88,9 @@ list($labels, $answerCount, $answerScore, $questionCount, $questionScore) = \met
 			<ul class="list-inline list-unstyled">
 				<li><span><i class="glyphicon glyphicon-calendar"></i> <?= date('Y-m-d H:i:s', $user->last_access_date); ?> </span></li>
 				<li>|</li>
+				<li>
 				<span><i class="glyphicon glyphicon-comment"></i> <?= $user->reputation; ?> reputation</span>
+				</li>
 				<li>|</li>
 				<li>
 					<span class="glyphicon glyphicon-star" style="color: gold;"></span>

@@ -41,6 +41,14 @@ use metalguardian\helpers\Helper;
 	<h1>Other functions</h1>
 	<?php if (!Helper::hasValidStackToken()) : ?>
 		<a href="<?= Helper::getStackLoginLink(); ?>">Grant access to stack overflow</a>
+	<?php else : ?>
+		<p>We have stack overflow access token</p>
+	<?php endif; ?>
+
+	<?php if (!Helper::hasValidGithubToken()) : ?>
+		<a href="<?= Helper::getGithubLoginLink(); ?>">Grant access to github</a>
+	<?php else : ?>
+		<p>We have github access token</p>
 	<?php endif; ?>
 </div>
 </body>

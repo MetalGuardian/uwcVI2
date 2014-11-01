@@ -6,6 +6,7 @@
 /**
  * @var \Slim\View $this
  * @var \metalguardian\models\StackUser $stackUser
+ * @var $githubUser
  */
 ?>
 
@@ -18,6 +19,7 @@
 </head>
 <body>
 <div class="container">
+	<?php $githubUser && $this->display('githubView.php', ['user' => $githubUser]); ?>
 	<?php $stackUser && $this->display('stackView.php', ['user' => $stackUser]); ?>
 </div>
 </body>

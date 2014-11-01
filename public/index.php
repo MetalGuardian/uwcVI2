@@ -7,13 +7,6 @@ use metalguardian\helpers\Helper;
 
 require '..' . DIRECTORY_SEPARATOR . 'config.php';
 
-ActiveRecord\Config::initialize(
-	function(\ActiveRecord\Config $cfg) {
-		$cfg->set_model_directory(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'models');
-		$cfg->set_connections(['development' => MYSQL_CONNECTION_STRING]);
-	}
-);
-
 $app = new \Slim\Slim(
 	[
 		'templates.path' => __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'views'
@@ -38,17 +31,37 @@ $app->get(
 	}
 );
 $app->get(
+	'/githubAccess',
+	function () use ($app) {
+		$code = $app->request->get('code');
+		if (!$code) {
+			throw new Exception('Can not get access code');
+		}
+		Helper::getGithubAccessToken($code);
+		$app->redirect('/');
+	}
+);
+
+$app->get(
 	'/get-user-info',
 	function () use ($app) {
 		$email = $app->request->get('email');
 		$name = $app->request->get('name');
 		$stack = (int)$app->request->get('stack');
+		$github = $app->request->get('github');
+
 		$stackUser = null;
 		if ($stack) {
-			$stackUser = Helper::getStackUserInfo($stack);
+			// i use user id: 157882
+			//$stackUser = Helper::getStackUserInfo($stack);
 		}
 
-		$app->render('view.php', ['stackUser' => $stackUser,]);
+		$githubUser = null;
+		if ($github) {
+			$githubUser = Helper::getGithubUserInfo($github);
+		}
+
+		$app->render('view.php', ['stackUser' => $stackUser, 'githubUser' => $githubUser]);
 	}
 );
 
