@@ -231,12 +231,6 @@ class Helper
 			if ($curl->http_status_code !== 200) {
 				throw new \Exception(isset($response->message) ? $response->message : 'Unknown error');
 			}
-			echo '<pre>';
-			print_r($response);
-			exit();
-			$user = $response;
-
-			$user->contributions = static::getGithubUserContribotions($id);
 
 			$tags = static::$cache->set('github-user-contributions', false);
 		}
